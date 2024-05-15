@@ -64,7 +64,8 @@ export type ChatResponse = {
 }
 
 export type ConversationRequest = {
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  selectedGPTOption?: string | null;
 }
 
 export type UserInfo = {

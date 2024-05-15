@@ -3,13 +3,15 @@ import { chatHistorySampleData } from '../constants/chatHistory'
 import { ChatMessage, Conversation, ConversationRequest, CosmosDBHealth, CosmosDBStatus, UserInfo } from './models'
 
 export async function conversationApi(options: ConversationRequest, abortSignal: AbortSignal): Promise<Response> {
+  console.log(options)
   const response = await fetch('/conversation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      messages: options.messages
+      messages: options.messages,
+      selectedGPTOption: options.selectedGPTOption
     }),
     signal: abortSignal
   })
@@ -121,11 +123,14 @@ export const historyGenerate = async (
   if (convId) {
     body = JSON.stringify({
       conversation_id: convId,
-      messages: options.messages
+
+      messages: options.messages,
+      selectedGPTOption: options.selectedGPTOption
     })
   } else {
     body = JSON.stringify({
-      messages: options.messages
+      messages: options.messages,
+      selectedGPTOption: options.selectedGPTOption
     })
   }
   const response = await fetch('/history/generate', {

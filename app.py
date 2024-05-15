@@ -112,6 +112,13 @@ AZURE_SEARCH_PERMITTED_GROUPS_COLUMN = os.environ.get(
 AZURE_SEARCH_STRICTNESS = os.environ.get("AZURE_SEARCH_STRICTNESS", SEARCH_STRICTNESS)
 
 # AOAI Integration Settings
+
+#GPT4
+AZURE_OPENAI_RESOURCE_GPT4 = os.environ.get("AZURE_OPENAI_RESOURCE_GPT4")
+AZURE_OPENAI_KEY_GPT4 = os.environ.get("AZURE_OPENAI_KEY_GPT4")
+AZURE_OPENAI_MODEL_GPT4 = os.environ.get("AZURE_OPENAI_MODEL_GPT4")
+
+
 AZURE_OPENAI_RESOURCE = os.environ.get("AZURE_OPENAI_RESOURCE")
 AZURE_OPENAI_MODEL = os.environ.get("AZURE_OPENAI_MODEL")
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
@@ -310,7 +317,23 @@ SHOULD_USE_DATA = should_use_data()
 
 
 # Initialize Azure OpenAI Client
-def init_openai_client(use_data=SHOULD_USE_DATA):
+def init_openai_client(use_data=SHOULD_USE_DATA, llm=""):
+    print("init_openai_client: ", llm)
+    
+    if (llm=="GPT 4"):
+        OPENAI_RESOURCE = AZURE_OPENAI_RESOURCE_GPT4
+        OPENAI_KEY = AZURE_OPENAI_KEY_GPT4
+        OPENAI_MODEL = AZURE_OPENAI_MODEL_GPT4
+
+    if (llm=="GPT 3.5"):
+        OPENAI_RESOURCE = AZURE_OPENAI_RESOURCE
+        OPENAI_KEY = AZURE_OPENAI_KEY
+        OPENAI_MODEL = AZURE_OPENAI_MODEL
+
+    print("OPENAI_RESOURCE: ", OPENAI_RESOURCE)
+    print("OPENAI_MODEL: ", OPENAI_MODEL)
+    print("OPENAI_KEY: ", OPENAI_KEY)
+
     azure_openai_client = None
     try:
         # API version check
@@ -323,7 +346,7 @@ def init_openai_client(use_data=SHOULD_USE_DATA):
             )
 
         # Endpoint
-        if not AZURE_OPENAI_ENDPOINT and not AZURE_OPENAI_RESOURCE:
+        if not AZURE_OPENAI_ENDPOINT and not OPENAI_RESOURCE:
             raise Exception(
                 "AZURE_OPENAI_ENDPOINT or AZURE_OPENAI_RESOURCE is required"
             )
@@ -331,11 +354,11 @@ def init_openai_client(use_data=SHOULD_USE_DATA):
         endpoint = (
             AZURE_OPENAI_ENDPOINT
             if AZURE_OPENAI_ENDPOINT
-            else f"https://{AZURE_OPENAI_RESOURCE}.openai.azure.com/"
+            else f"https://{OPENAI_RESOURCE}.openai.azure.com/"
         )
 
         # Authentication
-        aoai_api_key = AZURE_OPENAI_KEY
+        aoai_api_key = OPENAI_KEY
         ad_token_provider = None
         if not aoai_api_key:
             logging.debug("No AZURE_OPENAI_KEY found, using Azure AD auth")
@@ -344,7 +367,7 @@ def init_openai_client(use_data=SHOULD_USE_DATA):
             )
 
         # Deployment
-        deployment = AZURE_OPENAI_MODEL
+        deployment = OPENAI_MODEL
         if not deployment:
             raise Exception("AZURE_OPENAI_MODEL is required")
 
@@ -727,6 +750,11 @@ def get_configured_data_source():
 
 def prepare_model_args(request_body, request_headers):
     request_messages = request_body.get("messages", [])
+    selectedGPTOption = request_body.get("selectedGPTOption", None)
+    if (selectedGPTOption =="GPT 4"):
+        OPENAI_MODEL = AZURE_OPENAI_MODEL_GPT4
+    else:
+        OPENAI_MODEL = AZURE_OPENAI_MODEL
     messages = []
     if not SHOULD_USE_DATA:
         messages = [{"role": "system", "content": AZURE_OPENAI_SYSTEM_MESSAGE}]
@@ -760,7 +788,7 @@ def prepare_model_args(request_body, request_headers):
             else None
         ),
         "stream": SHOULD_STREAM,
-        "model": AZURE_OPENAI_MODEL,
+        "model": OPENAI_MODEL,
         "user": user_json,
     }
 
@@ -849,8 +877,11 @@ async def send_chat_request(request_body, request_headers):
     request_body['messages'] = filtered_messages
     model_args = prepare_model_args(request_body, request_headers)
 
+    selectedGPTOption = request_body.get("selectedGPTOption", None)
+    print("send_chat_request: ", selectedGPTOption)
+
     try:
-        azure_openai_client = init_openai_client()
+        azure_openai_client = init_openai_client(llm=selectedGPTOption)
         raw_response = await azure_openai_client.chat.completions.with_raw_response.create(**model_args)
         response = raw_response.parse()
         apim_request_id = raw_response.headers.get("apim-request-id") 

@@ -35,6 +35,9 @@ import { ChatHistoryPanel } from '../../components/ChatHistory/ChatHistoryPanel'
 import { AppStateContext } from '../../state/AppProvider'
 import { useBoolean } from '@fluentui/react-hooks'
 
+import { SelectedGPTContext } from '../SelectedGPTContext'
+
+
 const enum messageStatus {
   NotRunning = 'Not Running',
   Processing = 'Processing',
@@ -58,6 +61,8 @@ const Chat = () => {
   const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true)
   const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
 
+  const selectedGPTOption = useContext(SelectedGPTContext);
+
   const errorDialogContentProps = {
     type: DialogType.close,
     title: errorMsg?.title,
@@ -75,7 +80,12 @@ const Chat = () => {
   const [ASSISTANT, TOOL, ERROR] = ['assistant', 'tool', 'error']
   const NO_CONTENT_ERROR = 'No content in messages object.'
 
+  useEffect(() => {  
+    console.log(selectedGPTOption);  
+    } , [selectedGPTOption]); 
+
   useEffect(() => {
+    
     if (
       appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.Working &&
       appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured &&
@@ -186,7 +196,9 @@ const Chat = () => {
     setMessages(conversation.messages)
 
     const request: ConversationRequest = {
-      messages: [...conversation.messages.filter(answer => answer.role !== ERROR)]
+      
+      messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)],
+            selectedGPTOption: selectedGPTOption, // Add selectedOption to the request 
     }
 
     let result = {} as ChatResponse
@@ -299,12 +311,15 @@ const Chat = () => {
       } else {
         conversation.messages.push(userMessage)
         request = {
-          messages: [...conversation.messages.filter(answer => answer.role !== ERROR)]
+          
+          messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)],
+                    selectedGPTOption: selectedGPTOption,
         }
       }
     } else {
       request = {
-        messages: [userMessage].filter(answer => answer.role !== ERROR)
+        messages: [userMessage].filter((answer) => answer.role !== ERROR),
+                selectedGPTOption: selectedGPTOption,
       }
       setMessages(request.messages)
     }
