@@ -4,21 +4,35 @@ import { Dialog, Stack, TextField } from '@fluentui/react'
 import { CopyRegular } from '@fluentui/react-icons'
 
 import { CosmosDBStatus } from '../../api'
-import Contoso from '../../assets/Contoso.svg'
+import PHXCHAT from '../../assets/PHX-logo-chat.png'
 import { HistoryButton, ShareButton } from '../../components/common/Button'
 import { AppStateContext } from '../../state/AppProvider'
 
 import styles from './Layout.module.css'
 
+import TermsAndConditionsDialog from '../../TermsAndConditionsDialog';  
+import { DefaultButton } from '@fluentui/react';
+import { SelectedGPTContext } from '../SelectedGPTContext';
+
+
 const Layout = () => {
   const [isSharePanelOpen, setIsSharePanelOpen] = useState<boolean>(false)
   const [copyClicked, setCopyClicked] = useState<boolean>(false)
   const [copyText, setCopyText] = useState<string>('Copy URL')
-  const [shareLabel, setShareLabel] = useState<string | undefined>('Share')
+  const [shareLabel, setShareLabel] = useState<string | undefined>('More')
   const [hideHistoryLabel, setHideHistoryLabel] = useState<string>('Hide chat history')
   const [showHistoryLabel, setShowHistoryLabel] = useState<string>('Show chat history')
   const appStateContext = useContext(AppStateContext)
   const ui = appStateContext?.state.frontendSettings?.ui
+
+  // Testing
+  const [selectedOption, setSelectedOption] = useState<string | null>('GPT 4');  
+  const options = ['GPT 3.5', 'GPT 4'];  
+
+  const [isTermsDialogOpen, setIsTermsDialogOpen] = useState<boolean>(false); 
+    const handleTermsClick = () => {  
+        setIsTermsDialogOpen(true);  
+    };  
 
   const handleShareClick = () => {
     setIsSharePanelOpen(true)
@@ -67,15 +81,29 @@ const Layout = () => {
   }, [])
 
   return (
+     /* Choice chips buttons */
+    <SelectedGPTContext.Provider value={selectedOption}> 
     <div className={styles.layout}>
       <header className={styles.header} role={'banner'}>
         <Stack horizontal verticalAlign="center" horizontalAlign="space-between">
           <Stack horizontal verticalAlign="center">
-            <img src={ui?.logo ? ui.logo : Contoso} className={styles.headerIcon} aria-hidden="true" alt="" />
+            <img src={ui?.logo ? ui.logo : PHXCHAT} className={styles.headerIcon} aria-hidden="true" alt="" />
             <Link to="/" className={styles.headerTitleContainer}>
               <h1 className={styles.headerTitle}>{ui?.title}</h1>
             </Link>
           </Stack>
+      {/* Choice chips UI */}
+          <Stack horizontal tokens={{ childrenGap: 4 }} >  
+                                {options.map((option) => (  
+                                <DefaultButton  
+                                    key={option}  
+                                    text={option}  
+                                    onClick={() => setSelectedOption(option)}  
+                                    className={selectedOption === option ? styles.chipSelected : styles.chip}  
+                                />  
+                                ))}  
+                            </Stack>  
+
           <Stack horizontal tokens={{ childrenGap: 4 }} className={styles.shareButtonContainer}>
             {appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && (
               <HistoryButton
@@ -125,7 +153,13 @@ const Layout = () => {
           </div>
         </Stack>
       </Dialog>
+
+      <footer>  
+                <a className="termsAndConditions" href="#" onClick={handleTermsClick}>Terms and Conditions</a>  
+            </footer>  
+            <TermsAndConditionsDialog isOpen={isTermsDialogOpen} onAccept={() => setIsTermsDialogOpen(false)} /> 
     </div>
+    </SelectedGPTContext.Provider> 
   )
 }
 

@@ -32,7 +32,7 @@
 }
 
 .headerIcon {
-  height: 32px;
+  height: 48px;
   width: auto;
   margin-left: 36px;
 }
@@ -99,6 +99,33 @@
   align-items: center;
   color: #242424;
 }
+
+.chip {  
+  border: none;  
+  border-radius: 20px;  
+  background-color: #ddd;  
+  cursor: pointer;  
+  height: 30px;  
+  transition: background-color 0.3s ease;  
+}  
+  
+.chip:hover {  
+  background-color: #ccc;  
+}  
+  
+.chipSelected {  
+  border: none;  
+  border-radius: 20px;  
+  background-color: #008648; 
+  color: white; 
+  cursor: pointer;  
+  height: 30px;  
+  transition: background-color 0.3s ease;  
+}  
+  
+.chipSelected:hover {  
+  background-color: #3ea303;  
+}  
 
 @media (max-width: 480px) {
   .headerTitleContainer {
