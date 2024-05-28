@@ -39,7 +39,7 @@ load_dotenv()
 print("OPALAA: ", os.environ.get("AZURE_OPENAI_MODEL"))
 
 # UI configuration (optional)
-UI_TITLE = os.environ.get("UI_TITLE") or "Contoso"
+UI_TITLE = os.environ.get("UI_TITLE") or "PHOENIX GPT"
 UI_LOGO = os.environ.get("UI_LOGO")
 UI_CHAT_LOGO = os.environ.get("UI_CHAT_LOGO")
 UI_CHAT_TITLE = os.environ.get("UI_CHAT_TITLE") or "Start chatting"
@@ -268,7 +268,7 @@ frontend_settings = {
     "ui": {
         "title": UI_TITLE,
         "logo": UI_LOGO,
-        "chat_logo": UI_CHAT_LOGO or UI_LOGO,
+        "chat_logo": UI_CHAT_LOGO,
         "chat_title": UI_CHAT_TITLE,
         "chat_description": UI_CHAT_DESCRIPTION,
         "show_share_button": UI_SHOW_SHARE_BUTTON,

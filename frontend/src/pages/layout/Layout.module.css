@@ -126,6 +126,12 @@
 .chipSelected:hover {  
   background-color: #3ea303;  
 }  
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px; /* adjust the height as needed */
+}
 
 @media (max-width: 480px) {
   .headerTitleContainer {
